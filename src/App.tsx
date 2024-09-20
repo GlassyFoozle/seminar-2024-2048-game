@@ -1,3 +1,5 @@
+import './App.css';
+
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { type Map2048, moveMapIn2048Rule } from './Game'; // import base game logic
@@ -120,40 +122,28 @@ const App: React.FC = () => {
     setIsGameOver(false);
   };
 
+  const getTileClass = (value: number | null): string => {
+    if (value === null) return 'tile-null';
+    return `tile-${value}`;
+  };
+
   return (
-    <div style={{ textAlign: 'center' }}>
+    <div className="game-container">
       <h1>2048 Game</h1>
       {isGameOver && <div>Game Over!</div>}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${BOARD_SIZE}, 100px)`,
-        }}
-      >
+      <div className="game-board">
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <div
               key={`${rowIndex}-${colIndex}`}
-              style={{
-                width: '100px',
-                height: '100px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: cell != null ? '#eee' : '#ccc',
-                margin: '5px',
-                fontSize: '24px',
-                fontWeight: 'bold',
-              }}
+              className={`tile ${getTileClass(cell)}`}
             >
               {cell}
             </div>
           )),
         )}
       </div>
-      <button onClick={resetGame} style={{ marginTop: '20px' }}>
-        Restart Game
-      </button>
+      <button onClick={resetGame}>Restart Game</button>
     </div>
   );
 };
