@@ -7,10 +7,33 @@ import { type Map2048, moveMapIn2048Rule } from './Game'; // import base game lo
 const BOARD_SIZE = 4;
 
 const initializeBoard = (): Map2048 => {
-  const newBoard: Map2048 = Array.from({ length: BOARD_SIZE }, () =>
-    Array.from({ length: BOARD_SIZE }, () => null),
-  );
-  return addRandomTile(addRandomTile(newBoard));
+  const storedBoard = localStorage.getItem('board');
+  if (storedBoard != null) {
+    return JSON.parse(storedBoard) as Map2048;
+  } else {
+    const newBoard: Map2048 = Array.from({ length: BOARD_SIZE }, () =>
+      Array.from({ length: BOARD_SIZE }, () => null),
+    );
+    return addRandomTile(addRandomTile(newBoard));
+  }
+};
+
+const initializeGameOver = (): boolean => {
+  const storedGameOver = localStorage.getItem('isGameOver');
+  if (storedGameOver != null) {
+    return JSON.parse(storedGameOver) as boolean;
+  } else {
+    return false;
+  }
+};
+
+const initializeHasWon = (): boolean => {
+  const storedHasWon = localStorage.getItem('hasWon');
+  if (storedHasWon != null) {
+    return JSON.parse(storedHasWon) as boolean;
+  } else {
+    return false;
+  }
 };
 
 const addRandomTile = (board: Map2048): Map2048 => {
@@ -21,7 +44,7 @@ const addRandomTile = (board: Map2048): Map2048 => {
   const randomEmptyPosition = emptyPositions.sort(() => Math.random() - 0.5)[0];
 
   if (randomEmptyPosition === undefined) {
-    return board; // No empty tiles
+    return board; // no empty tiles
   } else {
     const randomValue = Math.random() < 0.9 ? 2 : 4;
     const newBoard = board.map((row, i) =>
@@ -37,21 +60,19 @@ const addRandomTile = (board: Map2048): Map2048 => {
 
 const App: React.FC = () => {
   const [board, setBoard] = useState<Map2048>(initializeBoard);
-  const [isGameOver, setIsGameOver] = useState(false);
-
-  useEffect(() => {
-    const storedBoard = localStorage.getItem('board');
-    if (storedBoard != null) {
-      setBoard(JSON.parse(storedBoard) as Map2048);
-    }
-  }, []);
+  const [isGameOver, setIsGameOver] = useState(initializeGameOver);
+  const [hasWon, setHasWon] = useState(initializeHasWon);
 
   useEffect(() => {
     localStorage.setItem('board', JSON.stringify(board));
-  }, [board]);
+    localStorage.setItem('isGameOver', JSON.stringify(isGameOver));
+    localStorage.setItem('hasWon', JSON.stringify(hasWon));
+  }, [board, isGameOver, hasWon]);
 
   const handleMove = useCallback(
     (direction: 'up' | 'left' | 'right' | 'down') => {
+      if (hasWon || isGameOver) return;
+
       const { result, isMoved } = moveMapIn2048Rule(board, direction);
       const checkGameOver = (newBoard: Map2048) => {
         if (!canMove(newBoard)) {
@@ -63,10 +84,17 @@ const App: React.FC = () => {
         const newBoard = addRandomTile(result);
         setBoard(newBoard);
         checkGameOver(newBoard);
+        checkWinCondition(newBoard);
       }
     },
-    [board],
+    [board, hasWon, isGameOver],
   );
+
+  const checkWinCondition = (newBoard: Map2048) => {
+    if (newBoard.some((row) => row.some((cell) => cell === 128))) {
+      setHasWon(true); // win if some tile reaches 128
+    }
+  };
 
   const canMove = (curBoard: Map2048): boolean => {
     // check for empty cells or possible merges
@@ -91,7 +119,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isGameOver) return;
+      if (isGameOver || hasWon) return;
 
       switch (e.key) {
         case 'ArrowUp':
@@ -115,11 +143,13 @@ const App: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleMove, isGameOver]);
+  }, [handleMove, isGameOver, hasWon]);
 
   const resetGame = () => {
+    localStorage.clear();
     setBoard(initializeBoard());
     setIsGameOver(false);
+    setHasWon(false);
   };
 
   const getTileClass = (value: number | null): string => {
@@ -130,8 +160,12 @@ const App: React.FC = () => {
   return (
     <div className="game-container">
       <h1>2048 Game</h1>
-      {isGameOver && <div>Game Over!</div>}
-      <div className="game-board">
+      {hasWon && <div className="message">You win!</div>}
+      {isGameOver && <div className="message">Game Over!</div>}
+      <div
+        className={`game-board ${hasWon || isGameOver ? 'opaque' : ''}`}
+        style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 100px)` }}
+      >
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <div
