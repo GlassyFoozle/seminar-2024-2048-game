@@ -25,6 +25,25 @@ body {
   width: fit-content;
   grid-template-columns: repeat(4, 100px);
   grid-template-rows: repeat(4, 100px);
+  position: relative;
+}
+
+.opaque {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 20px 40px;
+  border-radius: 10px;
+  z-index: 10;
 }
 
 .tile {
