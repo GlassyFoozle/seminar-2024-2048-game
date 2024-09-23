@@ -1,6 +1,6 @@
 import './App.css';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { type Map2048, moveMapIn2048Rule } from './Game'; // import base game logic
 
@@ -34,7 +34,7 @@ const initializeHasWon = (): boolean => {
   } else {
     return false;
   }
-};
+}; // 너무 노가다로 해결한 것 같습니다..
 
 const addRandomTile = (board: Map2048): Map2048 => {
   const emptyPositions = board.flatMap((row, i) =>
@@ -44,7 +44,7 @@ const addRandomTile = (board: Map2048): Map2048 => {
   const randomEmptyPosition = emptyPositions.sort(() => Math.random() - 0.5)[0];
 
   if (randomEmptyPosition === undefined) {
-    return board; // no empty tiles
+    return board; // if no empty tiles
   } else {
     const randomValue = Math.random() < 0.9 ? 2 : 4;
     const newBoard = board.map((row, i) =>
@@ -58,7 +58,8 @@ const addRandomTile = (board: Map2048): Map2048 => {
   }
 };
 
-const App: React.FC = () => {
+function App() {
+  // main app
   const [board, setBoard] = useState<Map2048>(initializeBoard);
   const [isGameOver, setIsGameOver] = useState(initializeGameOver);
   const [hasWon, setHasWon] = useState(initializeHasWon);
@@ -91,25 +92,27 @@ const App: React.FC = () => {
   );
 
   const checkWinCondition = (newBoard: Map2048) => {
+    // check win
     if (newBoard.some((row) => row.some((cell) => cell === 128))) {
       setHasWon(true); // win if some tile reaches 128
     }
   };
 
   const canMove = (curBoard: Map2048): boolean => {
+    // check if board is movable
     // check for empty cells or possible merges
     return curBoard.some((row, rowIndex) =>
       row.some((cell, colIndex) => {
         if (cell === null) return true;
         if (
-          colIndex < BOARD_SIZE - 1 && // check right
-          row[colIndex + 1] === cell
+          colIndex < BOARD_SIZE - 1 &&
+          row[colIndex + 1] === cell // check left-right
         )
           return true;
         if (rowIndex < BOARD_SIZE - 1) {
-          // check down
+          // check up-down
           const nextRow = curBoard[rowIndex + 1];
-          if (nextRow === undefined) throw new Error('error while moving');
+          if (nextRow === undefined) throw new Error('error');
           if (nextRow[colIndex] === cell) return true;
         }
         return false;
@@ -118,6 +121,7 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // handle keyboard input
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isGameOver || hasWon) return;
 
@@ -159,7 +163,7 @@ const App: React.FC = () => {
 
   return (
     <div className="game-container">
-      <h1>2048 Game</h1>
+      <h1>(not)2048 Game</h1>
       {hasWon && <div className="message">You win!</div>}
       {isGameOver && <div className="message">Game Over!</div>}
       <div
@@ -180,6 +184,6 @@ const App: React.FC = () => {
       <button onClick={resetGame}>Restart Game</button>
     </div>
   );
-};
+}
 
 export default App;
