@@ -1,5 +1,3 @@
-import './App.css';
-
 import { useCallback, useEffect, useState } from 'react';
 
 import { type Map2048, moveMapIn2048Rule } from './Game'; // import base game logic
@@ -157,31 +155,54 @@ function App() {
   };
 
   const getTileClass = (value: number | null): string => {
-    if (value === null) return 'tile-null';
-    return `tile-${value}`;
+    const baseClass =
+      'flex items-center justify-center w-24 h-24 text-xl font-bold text-black rounded';
+    if (value === null) return `${baseClass} bg-tile-null`;
+    const colorMapping: Record<number, string> = {
+      2: 'bg-tile-2',
+      4: 'bg-tile-4',
+      8: 'bg-tile-8',
+      16: 'bg-tile-16',
+      32: 'bg-tile-32',
+      64: 'bg-tile-64',
+      128: 'bg-tile-128',
+    };
+    return `${baseClass} ${colorMapping[value] ?? ''}`;
   };
 
   return (
-    <div className="game-container">
-      <h1>(not)2048 Game</h1>
-      {hasWon && <div className="message">You win!</div>}
-      {isGameOver && <div className="message">Game Over!</div>}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <h1 className="text-3xl font-bold mb-4">(not)2048 Game</h1>
+      {hasWon && (
+        <div className="absolute z-10 p-4 text-3xl text-white bg-black/75 rounded">
+          You win!
+        </div>
+      )}
+      {isGameOver && (
+        <div className="absolute z-10 p-4 text-3xl text-white bg-black/75 rounded">
+          Game Over!
+        </div>
+      )}
       <div
-        className={`game-board ${hasWon || isGameOver ? 'opaque' : ''}`}
-        style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 100px)` }}
+        className={`grid gap-2 p-4 bg-gray-800 rounded-lg ${
+          hasWon || isGameOver ? 'opacity-50 pointer-events-none' : ''
+        }`}
+        style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)` }}
       >
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              className={`tile ${getTileClass(cell)}`}
-            >
+            <div key={`${rowIndex}-${colIndex}`} className={getTileClass(cell)}>
               {cell}
             </div>
           )),
         )}
       </div>
-      <button onClick={resetGame}>Restart Game</button>
+      <button
+        onClick={resetGame}
+        className="mt-4 px-4 py-2 text-white bg-green rounded hover:bg-darkgreen"
+      >
+        Restart Game
+      </button>
     </div>
   );
 }
