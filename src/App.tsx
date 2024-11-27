@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { Board } from './components/Board';
 import { type Map2048, moveMapIn2048Rule } from './Game'; // import base game logic
 
 const BOARD_SIZE = 4;
@@ -154,22 +155,6 @@ function App() {
     setHasWon(false);
   };
 
-  const getTileClass = (value: number | null): string => {
-    const baseClass =
-      'flex items-center justify-center w-24 h-24 text-xl font-bold text-black rounded';
-    if (value === null) return `${baseClass} bg-tile-null`;
-    const colorMapping: Record<number, string> = {
-      2: 'bg-tile-2',
-      4: 'bg-tile-4',
-      8: 'bg-tile-8',
-      16: 'bg-tile-16',
-      32: 'bg-tile-32',
-      64: 'bg-tile-64',
-      128: 'bg-tile-128',
-    };
-    return `${baseClass} ${colorMapping[value] ?? ''}`;
-  };
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-3xl font-bold mb-4">(not)2048 Game</h1>
@@ -184,18 +169,9 @@ function App() {
         </div>
       )}
       <div
-        className={`grid gap-2 p-4 bg-gray-800 rounded-lg ${
-          hasWon || isGameOver ? 'opacity-50 pointer-events-none' : ''
-        }`}
-        style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)` }}
+        className={hasWon || isGameOver ? 'opacity-50 pointer-events-none' : ''}
       >
-        {board.map((row, rowIndex) =>
-          row.map((cell, colIndex) => (
-            <div key={`${rowIndex}-${colIndex}`} className={getTileClass(cell)}>
-              {cell}
-            </div>
-          )),
-        )}
+        <Board board={board} />
       </div>
       <button
         onClick={resetGame}
