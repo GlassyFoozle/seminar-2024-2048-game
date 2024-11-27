@@ -19,5 +19,10 @@ export default {
       },
     },
   },
+  safelist: [
+    {
+      pattern: /bg-tile-(2|4|8|16|32|64|128|null)/,
+    },
+  ],
   plugins: [],
 };
